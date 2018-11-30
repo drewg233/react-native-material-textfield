@@ -40,6 +40,7 @@ export default class TextField extends PureComponent {
     tintColor: 'rgb(0, 145, 234)',
     textColor: 'rgba(0, 0, 0, .87)',
     baseColor: 'rgba(0, 0, 0, .38)',
+    lineColor: 'rgb(0, 145, 234)',
 
     errorColor: 'rgb(213, 0, 0)',
 
@@ -70,6 +71,10 @@ export default class TextField extends PureComponent {
     tintColor: PropTypes.string,
     textColor: PropTypes.string,
     baseColor: PropTypes.string,
+    lineColor: PropTypes.string,
+    cursorColor: PropTypes.string,
+    labelColor: PropTypes.string,
+    unfocusedLabelColor: PropTypes.string,
 
     label: PropTypes.string.isRequired,
     title: PropTypes.string,
@@ -125,7 +130,7 @@ export default class TextField extends PureComponent {
     };
   }
 
-  componentWillReceiveProps(props) {
+  UNSAFE_componentWillReceiveProps(props) {
     let { error } = this.state;
 
     if (null != props.value) {
@@ -149,16 +154,16 @@ export default class TextField extends PureComponent {
     this.mounted = false;
   }
 
-  componentWillUpdate(props, state) {
+  UNSAFE_componentWillUpdate(props, state) {
     let { error, animationDuration: duration } = this.props;
     let { focus, focused } = this.state;
 
     if (props.error !== error || focused ^ state.focused) {
       let toValue = this.focusState(props.error, state.focused);
 
-      Animated
-        .timing(focus, { toValue, duration })
-        .start(this.onFocusAnimationEnd);
+      Animated.timing(focus, { toValue, duration }).start(
+        this.onFocusAnimationEnd
+      );
     }
   }
 
@@ -167,7 +172,7 @@ export default class TextField extends PureComponent {
   }
 
   focusState(error, focused) {
-    return error? -1 : (focused? 1 : 0);
+    return error ? -1 : focused ? 1 : 0;
   }
 
   focus() {
@@ -193,9 +198,9 @@ export default class TextField extends PureComponent {
     let { text, receivedFocus } = this.state;
     let { value, defaultValue } = this.props;
 
-    return (receivedFocus || null != value || null == defaultValue)?
-      text:
-      defaultValue;
+    return receivedFocus || null != value || null == defaultValue
+      ? text
+      : defaultValue;
   }
 
   isFocused() {
@@ -287,11 +292,7 @@ export default class TextField extends PureComponent {
       return null;
     }
 
-    return (
-      <View style={styles.accessory}>
-        {renderAccessory()}
-      </View>
-    );
+    return <View style={styles.accessory}>{renderAccessory()}</View>;
   }
 
   renderAffix(type, active, focused) {
@@ -345,7 +346,11 @@ export default class TextField extends PureComponent {
       titleTextStyle,
       tintColor,
       baseColor,
+      lineColor,
       textColor,
+      cursorColor,
+      labelColor,
+      unfocusedLabelColor,
       errorColor,
       lineWidth,
       activeLineWidth,
@@ -378,15 +383,10 @@ export default class TextField extends PureComponent {
       errorColor:
       focus.interpolate({
         inputRange: [-1, 0, 1],
-        outputRange: [errorColor, baseColor, tintColor],
+        outputRange: [errorColor, lineColor, lineColor],
       });
 
-    let borderBottomWidth = restricted?
-      activeLineWidth:
-      focus.interpolate({
-        inputRange: [-1, 0, 1],
-        outputRange: [activeLineWidth, lineWidth, activeLineWidth],
-      });
+      let borderBottomWidth = activeLineWidth;
 
     let inputContainerStyle = {
       paddingTop: labelHeight,
@@ -487,6 +487,8 @@ export default class TextField extends PureComponent {
       fontSize,
       activeFontSize: labelFontSize,
       tintColor,
+      labelColor,
+      unfocusedLabelColor,
       baseColor,
       errorColor,
       animationDuration,
@@ -511,14 +513,16 @@ export default class TextField extends PureComponent {
         <Animated.View {...inputContainerProps}>
           {disabled && <Line {...lineProps} />}
 
-          <Label {...labelProps}>{label}</Label>
+          <Label text={this.state.text} {...labelProps}>
+            {label}
+          </Label>
 
           <View style={styles.row}>
             {this.renderAffix('prefix', active, focused)}
 
             <TextInput
               style={[styles.input, inputStyle, inputStyleOverrides]}
-              selectionColor={tintColor}
+              selectionColor={ this.props.cursorColor ? this.props.cursorColor : this.props.tintColor }
 
               {...props}
 

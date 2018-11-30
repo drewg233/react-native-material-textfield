@@ -26,6 +26,8 @@ export default class Label extends PureComponent {
     tintColor: PropTypes.string.isRequired,
     baseColor: PropTypes.string.isRequired,
     errorColor: PropTypes.string.isRequired,
+    labelColor: PropTypes.string,
+    unfocusedLabelColor: PropTypes.string,
 
     animationDuration: PropTypes.number.isRequired,
 
@@ -46,7 +48,7 @@ export default class Label extends PureComponent {
     };
   }
 
-  componentWillReceiveProps(props) {
+  UNSAFE_componentWillReceiveProps(props) {
     let { focus, input } = this.state;
     let { active, focused, errored, animationDuration: duration } = this.props;
 
@@ -84,10 +86,13 @@ export default class Label extends PureComponent {
       activeFontSize,
       errorColor,
       baseColor,
+      labelColor,
+      unfocusedLabelColor,
       tintColor,
       baseSize,
       basePadding,
       style,
+      active,
       errored,
       active, 
       focused,
@@ -99,7 +104,7 @@ export default class Label extends PureComponent {
       errorColor:
       focus.interpolate({
         inputRange: [-1, 0, 1],
-        outputRange: [errorColor, baseColor, tintColor],
+        outputRange: [errorColor, baseColor, labelColor ? labelColor : tintColor ],
       });
 
     let top = input.interpolate({
@@ -111,10 +116,7 @@ export default class Label extends PureComponent {
     });
 
     let textStyle = {
-      fontSize: input.interpolate({
-        inputRange: [0, 1],
-        outputRange: [fontSize, activeFontSize],
-      }),
+      fontSize,
 
       color,
     };
