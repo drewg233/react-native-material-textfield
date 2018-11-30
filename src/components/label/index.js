@@ -92,7 +92,6 @@ export default class Label extends PureComponent {
       baseSize,
       basePadding,
       style,
-      active,
       errored,
       active, 
       focused,
